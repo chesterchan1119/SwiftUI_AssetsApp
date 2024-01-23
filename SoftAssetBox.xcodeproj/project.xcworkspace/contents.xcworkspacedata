@@ -2,6 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "self:">
+      location = "self:/Users/chesterchan/Desktop/SwiftUI_AssetsApp/SoftAssetBox.xcodeproj">
    </FileRef>
 </Workspace>
