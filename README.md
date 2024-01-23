@@ -10,7 +10,8 @@ SOFT ASSETS BOX is a comprehensive platform dedicated to managing and sharing a 
 #
 
 ### Assets Store 
-<img width="362" alt="image" src="https://github.com/chesterchan1119/SwiftUI_AssetsApp/assets/110362704/2bcee4df-e52e-4a0d-91a6-673225224744">
+<img width="349" alt="image" src="https://github.com/chesterchan1119/SwiftUI_AssetsApp/assets/110362704/b06b5bc8-2877-4258-98f9-0ce4c17701d1">
+
 
 #
 
