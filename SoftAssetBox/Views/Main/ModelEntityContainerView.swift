@@ -2,14 +2,15 @@ import SwiftUI
 import Model3DView
 
 struct ModelEntityContainerView: View {
-
+    
     /// The content of the pages.
     private static let pages: [(title: LocalizedStringKey, body: LocalizedStringKey)] = [
-        ("Create beautiful 3D assets", "Create some awesome assets in your favourite 3D modelling software."),
-        ("Export as glTF", "Export your work as a **glTF** format. Both text (`.gltf`) and binary (`.glb`) are supported!"),
-        ("Import to Xcode", "Add the **glTF** file and all associated resources to your project in **Xcode**."),
-        ("Enrichen your app!", "Make your app even more visually spectacular by using *Model3DView*!"),
+        ("3D Asset - The Solaris Starship", "A revolutionary starship that embraces sustainable design principles."),
+        ("Functionality", "It features large, transparent solar panels integrated into its exterior, harnessing the power of the sun to generate clean energy for propulsion and onboard systems."),
+        ("Minialist & Harmonious", "With its vibrant black and white accents and a modern minimalist design, the Solaris Starship showcases a harmonious fusion of technology and environmental consciousness."),
+        ("Adventure and Nostalgia", "The spaceship's timeless aesthetic evokes a sense of adventure and nostalgia, capturing the imagination of those who gaze upon it. Credit to: *Model3DView*!"),
     ]
+    
     
     // MARK: -
     @Binding var isPresented: Bool
@@ -31,7 +32,7 @@ struct ModelEntityContainerView: View {
      The current index of the `TabView` we use for the paged effect.
      */
     @State private var currentIndex = 0
-
+    
     // MARK: -
     private func onNextPressed() {
         if currentIndex < Self.pages.count - 1 {
@@ -43,54 +44,83 @@ struct ModelEntityContainerView: View {
             isPresented = false
         }
     }
-
+    
     var body: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 0) {
-                Model3DView(named: "scene.gltf")
-                    .onLoad { state in
-                        modelLoaded = state == .success
+        NavigationView {
+            VStack (spacing:0){
+          
+                GeometryReader { proxy in
+                    VStack(spacing: 0) {
+            
+                        Model3DView(named: "scene.gltf")
+                            .onLoad { state in
+                                modelLoaded = state == .success
+                            }
+                            .transform(rotate: rotation)
+                            .camera(camera)
+                            .frame(height: proxy.size.height / 2.5)
+            
+                        
+                        TabView(selection: $currentIndex) {
+                            ForEach(Array(Self.pages.enumerated()), id: \.offset) { (index, page) in
+                                PagedView(title: page.title, content: page.body)
+                                    .tag(index)
+                            }
+                        }
+                        .tabViewStyle(.page(indexDisplayMode: .always))
+                        
+//                        .overlay(PageControl(numberOfPages: Self.pages.count, currentIndex: $currentIndex).padding(.vertical, 10))
+                        
+                        HStack {
+                            Spacer()
+                            PageControl(numberOfPages: Self.pages.count, currentIndex: $currentIndex)
+                            Spacer()
+                        }
+                        .padding(.vertical, 10) // Adjust the vertical padding of the dots
+                        
+                        Button(action: onNextPressed) {
+                            HStack {
+                                Text("Continue")
+                                Image(systemName: "arrow.turn.down.right")
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity)
                     }
-                    .transform(rotate: rotation)
-                    .camera(camera)
-                    .frame(height: proxy.size.height / 2)
+                    .padding(.bottom, 10)
+                }
+                /**
+                 Only show the contents once the model is fully loaded.
+                 */
+                .opacity(modelLoaded ? 1 : 0)
+                .animation(.linear(duration: 0.6), value: modelLoaded)
+                .background(Color.white)
+                /**
+                 Keep track of changes to `currentIndex`. Once it changes, rotate the model accordingly.
+                 Note we're using `withAnimation` here. The `transform()` modifier of Model3DView is animatable!
+                 */
+                .onChange(of: currentIndex) { newIndex in
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        // Basically calculating how many degrees we should rotate based on the total number of pages.
+                        let slice = 360.0 / Double(Self.pages.count)
+                        let degrees = Double(newIndex) * -slice - (slice * 0.5)
+                        rotation.y = .degrees(degrees)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity) // Fill the entire view
+            .navigationBarItems(trailing:
+                HStack {
+                Button(action: {}) {
+                    Image(systemName: "square.and.arrow.up")
+                }
+                .foregroundColor(.blue)
                 
-                TabView(selection: $currentIndex) {
-                    ForEach(Array(Self.pages.enumerated()), id: \.offset) { (index, page) in
-                        PagedView(title: page.title, content: page.body)
-                            .tag(index)
-                    }
+                Button(action: {}) {
+                    Image(systemName: "flag")
                 }
-                .tabViewStyle(.page(indexDisplayMode: .always))
-
-                Button(action: onNextPressed) {
-                    HStack {
-                        Text("Continue")
-                        Image(systemName: "arrow.turn.down.right")
-                    }
-                }
-                .buttonStyle(.borderedProminent)
-                .frame(maxWidth: .infinity)
             }
-            .padding(.bottom, 30)
-        }
-        /**
-         Only show the contents once the model is fully loaded.
-         */
-        .opacity(modelLoaded ? 1 : 0)
-        .animation(.linear(duration: 0.6), value: modelLoaded)
-        .background(Color.white)
-        /**
-         Keep track of changes to `currentIndex`. Once it changes, rotate the model accordingly.
-         Note we're using `withAnimation` here. The `transform()` modifier of Model3DView is animatable!
-         */
-        .onChange(of: currentIndex) { newIndex in
-            withAnimation(.easeInOut(duration: 0.5)) {
-                // Basically calculating how many degrees we should rotate based on the total number of pages.
-                let slice = 360.0 / Double(Self.pages.count)
-                let degrees = Double(newIndex) * -slice - (slice * 0.5)
-                rotation.y = .degrees(degrees)
-            }
+            )
         }
     }
 }
@@ -123,6 +153,21 @@ private struct PagedView: View {
         .foregroundColor(.black)
     }
 }
+private struct PageControl: View {
+    let numberOfPages: Int
+    @Binding var currentIndex: Int
+    
+    var body: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<numberOfPages, id: \.self) { index in
+                Circle()
+                    .foregroundColor(index == currentIndex ? .blue : .gray)
+                    .frame(width: 8, height: 8)
+            }
+        }
+    }
+}
+
 
 #if DEBUG
 

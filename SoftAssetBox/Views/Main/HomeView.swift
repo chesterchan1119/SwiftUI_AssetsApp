@@ -59,11 +59,9 @@ struct HomeView: View {
                                 .font(.title3.weight(.semibold))
                                 .opacity(1 - bottomSheetTranslationProrated)
                                 .foregroundColor(.white)
-                            NavigationLink(destination: ModelEntityContainerView(isPresented: $isModelEntityContainerViewPresented)) {
-                                Text("View the Model Details")
-                            }
+                            
                             NavigationLink(destination: LoginView()) {
-                                Text("View the Login")
+                                Text("Sign in")
                             }
                         }
                         .navigationTitle("Home Page")
@@ -93,7 +91,7 @@ struct HomeView: View {
                             .frame(height: 150)
                     }
                     
-                
+                  
                 // MARK: Bottom Sheet
                 //                    BottomSheetView(position: $bottomSheetPosition) {
                 ////                        Text(bottomSheetTranslationProrated.formatted())
